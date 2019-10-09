@@ -11,4 +11,6 @@ end extend;
 
 architecture synth of extend is
 begin
+	imm32 <= signed & std_logic_vector(14 downto 0 => '0') & imm16 when signed = '0' else 
+			 signed & std_logic_vector(14 downto 0 => '0') & '0' & imm16(14 downto 0); 
 end synth;
