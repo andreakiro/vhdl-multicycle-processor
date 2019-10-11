@@ -10,7 +10,7 @@ entity controller is
         opx        : in  std_logic_vector(5 downto 0);
         -- activates branch condition
         branch_op  : out std_logic;
-        -- immediate value sign extention
+        -- immediate value sign extension
         imm_signed : out std_logic;
         -- instruction register enable
         ir_en      : out std_logic;
@@ -48,10 +48,16 @@ begin
 	-- (following the tutorial)
 	operation : process(s_op, s_opx)
 	begin
-		if s_op = x"04" then -- to be improved later on 
-			op_alu <= op;
+		if s_op = x"04" then -- to be completed later on 
+			op_alu <= op; -- add
 		elsif s_op = x"3A" then
-			op_alu <= opx;
+			if s_opx = x"0E" then 
+				op_alu <= "100001"; -- and
+			elsif s_opx = x"1B" then
+				op_alu <= "110011"; -- srl
+			end if;
+		elsif s_op = x"17" or s_op = x"15" then 
+			op_alu <= "000100"; -- 0x04 for addition (ldw and stw)
 		end if;
 	end process;
 		
@@ -83,14 +89,28 @@ begin
 			 			   or cur_state = I_OP;
 	
 	-- OUTPUT LOGIC
-	read <= '1' when cur_state = FETCH1 else '0'; -- ready for new instruction
+    -- immediate value sign extension
+	imm_signed <= '1' when cur_state = I_OP 
+	                    or cur_state = LOAD1 
+	                    or cur_state = STORE else '0'; -- from her table ¯\_(ツ)_/¯
+	-- instruction register enable
 	ir_en <= '1' when cur_state = FETCH2 else '0'; -- enable instruction
+	-- PC control signals
 	pc_en <= '1' when cur_state = FETCH2 else '0'; -- enable increment address by 4
-	imm_signed <= '1' when cur_state = I_OP else '0'; -- from her table ¯\_(ツ)_/¯
 	rf_wren <= '1' when cur_state = I_OP 
-					 or cur_state = R_OP else '0'; -- enable write into register
+					 or cur_state = R_OP 
+					 or cur_state = LOAD2 else '0'; -- enable write into register
+	-- multiplexers selections
+	sel_addr <= '1' when cur_state = LOAD1 
+					  or cur_state = STORE else '0'; -- read at ALU-specified address
 	sel_b <= '1' when cur_state = R_OP else '0'; -- select second operand (immediate
 												 -- or from register)
+	sel_mem <= '1' when cur_state = LOAD2 else '0'; -- write from memory (and not from
+												    -- ALU) into register
 	sel_rC <= '1' when cur_state = R_OP else '0'; -- select write address
+	-- read/write from/to memory
+	read <= '1' when cur_state = FETCH1 -- ready to read from memory
+				  or cur_state = LOAD1 else '0';
+	write <= '1' when cur_state = STORE else '0'; -- write to memory
 		
 end synth;

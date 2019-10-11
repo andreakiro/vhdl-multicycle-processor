@@ -10,7 +10,9 @@ entity extend is
 end extend;
 
 architecture synth of extend is
+	constant zeroes_16bit : std_logic_vector(15 downto 0) := (others => '0');
+	constant ones_16bit : std_logic_vector(15 downto 0) := (others => '1');
 begin
-	imm32 <= signed & std_logic_vector(14 downto 0 => '0') & imm16 when signed = '0'
-			 else signed & std_logic_vector(15 downto 0 => '0') & '0' & imm16(14 downto 0);
+	imm32 <= zeroes_16bit & imm16 when signed = '0' or imm16(15) = '0'
+			 else ones_16bit & imm16;
 end synth;
