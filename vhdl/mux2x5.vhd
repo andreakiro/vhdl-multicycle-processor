@@ -12,4 +12,5 @@ end mux2x5;
 
 architecture synth of mux2x5 is
 begin
+	o <= i1 when sel = '1' else i0;
 end synth;

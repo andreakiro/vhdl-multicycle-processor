@@ -37,5 +37,60 @@ entity controller is
 end controller;
 
 architecture synth of controller is
+	type state is (FETCH1, FETCH2, DECODE, R_OP, STORE, BREAK, LOAD1, LOAD2, I_OP);
+	signal cur_state, next_state : state;
+	signal s_op, s_opx : std_logic_vector(7 downto 0);
 begin
+	s_op <= "00" & op;
+	s_opx <= "00" & opx;
+	
+	-- selecting the appropriate op-code for op_alu, depending on the operation 
+	-- (following the tutorial)
+	operation : process(s_op, s_opx)
+	begin
+		if s_op = x"04" then -- to be improved later on 
+			op_alu <= op;
+		elsif s_op = x"3A" then
+			op_alu <= opx;
+		end if;
+	end process;
+		
+	-- FlipFlop
+	dff : process(reset_n, clk)
+	begin
+		if reset_n = '0' then
+			cur_state <= FETCH1;
+		elsif rising_edge(clk) then
+			cur_state <= next_state;
+		end if;
+	end process;
+			
+	-- TRANSITION LOGIC
+	next_state <= FETCH2 when cur_state = FETCH1
+			 else DECODE when cur_state = FETCH2
+			 else R_OP when cur_state = DECODE and s_op = x"3A"
+			 	and (s_opx = x"0E" or s_opx = x"1B")
+			 else STORE when cur_state = DECODE and s_op = x"15"
+			 else BREAK when cur_state = DECODE and s_op = x"3A" 
+			 	and s_opx = x"34"
+			 else BREAK when cur_state = BREAK
+			 else LOAD1 when cur_state = DECODE and s_op = x"17"
+			 else LOAD2 when cur_state = LOAD1
+			 else I_OP when cur_state = DECODE and s_op = x"04"
+			 else FETCH1 when cur_state = R_OP
+			 			   or cur_state = STORE
+			 			   or cur_state = LOAD2
+			 			   or cur_state = I_OP;
+	
+	-- OUTPUT LOGIC
+	read <= '1' when cur_state = FETCH1 else '0'; -- ready for new instruction
+	ir_en <= '1' when cur_state = FETCH2 else '0'; -- enable instruction
+	pc_en <= '1' when cur_state = FETCH2 else '0'; -- enable increment address by 4
+	imm_signed <= '1' when cur_state = I_OP else '0'; -- from her table ¯\_(ツ)_/¯
+	rf_wren <= '1' when cur_state = I_OP 
+					 or cur_state = R_OP else '0'; -- enable write into register
+	sel_b <= '1' when cur_state = R_OP else '0'; -- select second operand (immediate
+												 -- or from register)
+	sel_rC <= '1' when cur_state = R_OP else '0'; -- select write address
+		
 end synth;
