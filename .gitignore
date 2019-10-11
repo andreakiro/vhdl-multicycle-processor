@@ -1,0 +1,6 @@
+# Eclipse
+.project
+.settings/
+
+# Sigasi
+.library_mapping.xml
