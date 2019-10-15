@@ -26,7 +26,10 @@ begin
 			reg <= zeroes_16bit;
 		elsif rising_edge(clk) then
 			if en = '1' then
-				reg <= std_logic_vector(unsigned(reg) + to_unsigned(4, 16));
+				if add_imm = '1' then
+					reg <= std_logic_vector(unsigned(reg) + unsigned(imm));
+				else reg <= std_logic_vector(unsigned(reg) + to_unsigned(4, 16));
+				end if;
 			end if;
 		end if;
 	end process;
