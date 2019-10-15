@@ -45,23 +45,22 @@ begin
 	s_opx <= "00" & opx;
 	
 	-- selecting the appropriate op-code for op_alu, depending on the operation 
-	-- (following the tutorial)
-	operation : process(s_op, s_opx)
+	operation : process(s_op, s_opx) 	-- to be completed later on 
 	begin
-		if s_op = x"04" then -- to be completed later on 
-			op_alu <= op; -- add
+		if s_op = x"04" then 
+			op_alu <= op; 					-- add operation
 		elsif s_op = x"3A" then
 			if s_opx = x"0E" then 
-				op_alu <= "100001"; -- and
+				op_alu <= "100001"; 		-- and operation
 			elsif s_opx = x"1B" then
-				op_alu <= "110011"; -- srl
+				op_alu <= "110011"; 		-- srl operation
 			end if;
 		elsif s_op = x"17" or s_op = x"15" then 
-			op_alu <= "000100"; -- 0x04 for addition (ldw and stw)
+			op_alu <= "000100"; 			-- ldw and stw
 		end if;
 	end process;
 		
-	-- FlipFlop
+	-- flipflop
 	dff : process(reset_n, clk)
 	begin
 		if reset_n = '0' then
@@ -71,46 +70,48 @@ begin
 		end if;
 	end process;
 			
-	-- TRANSITION LOGIC
-	next_state <= FETCH2 when cur_state = FETCH1
-			 else DECODE when cur_state = FETCH2
-			 else R_OP when cur_state = DECODE and s_op = x"3A"
-			 	and (s_opx = x"0E" or s_opx = x"1B")
-			 else STORE when cur_state = DECODE and s_op = x"15"
-			 else BREAK when cur_state = DECODE and s_op = x"3A" 
-			 	and s_opx = x"34"
-			 else BREAK when cur_state = BREAK
-			 else LOAD1 when cur_state = DECODE and s_op = x"17"
-			 else LOAD2 when cur_state = LOAD1
-			 else I_OP when cur_state = DECODE and s_op = x"04"
-			 else FETCH1 when cur_state = R_OP
+	-- transition logic
+	next_state <= FETCH2 when cur_state = FETCH1 else
+			  	  DECODE when cur_state = FETCH2 else
+			  	  R_OP   when cur_state = DECODE and s_op = x"3A"
+			 								   and (s_opx = x"0E" or s_opx = x"1B") else
+			  	  STORE  when cur_state = DECODE and s_op = x"15" else
+			  	  BREAK  when cur_state = DECODE and s_op = x"3A" 
+			 									and s_opx = x"34" else
+			  	  BREAK  when cur_state = BREAK else
+			  	  LOAD1  when cur_state = DECODE and s_op = x"17" else
+			  	  LOAD2  when cur_state = LOAD1 else
+			 	  I_OP   when cur_state = DECODE and s_op = x"04" else
+			  	  FETCH1 when cur_state = R_OP
 			 			   or cur_state = STORE
 			 			   or cur_state = LOAD2
 			 			   or cur_state = I_OP;
 	
-	-- OUTPUT LOGIC
+	-- output logic
     -- immediate value sign extension
 	imm_signed <= '1' when cur_state = I_OP 
 	                    or cur_state = LOAD1 
-	                    or cur_state = STORE else '0'; -- from her table ¯\_(ツ)_/¯
+	                    or cur_state = STORE else '0';
+	                    
 	-- instruction register enable
-	ir_en <= '1' when cur_state = FETCH2 else '0'; -- enable instruction
-	-- PC control signals
-	pc_en <= '1' when cur_state = FETCH2 else '0'; -- enable increment address by 4
-	rf_wren <= '1' when cur_state = I_OP 
-					 or cur_state = R_OP 
-					 or cur_state = LOAD2 else '0'; -- enable write into register
+	ir_en 	   <= '1' when cur_state = FETCH2 else '0'; -- enable instruction
+	
+	-- pc control signals
+	pc_en 	   <= '1' when cur_state = FETCH2 else '0'; -- enable increment address by 4
+	rf_wren    <= '1' when cur_state = I_OP 
+					 	or cur_state = R_OP 
+					 	or cur_state = LOAD2 else '0';  -- enable write into register
+					 
 	-- multiplexers selections
-	sel_addr <= '1' when cur_state = LOAD1 
-					  or cur_state = STORE else '0'; -- read at ALU-specified address
-	sel_b <= '1' when cur_state = R_OP else '0'; -- select second operand (immediate
-												 -- or from register)
-	sel_mem <= '1' when cur_state = LOAD2 else '0'; -- write from memory (and not from
-												    -- ALU) into register
-	sel_rC <= '1' when cur_state = R_OP else '0'; -- select write address
+	sel_addr   <= '1' when cur_state = LOAD1 
+					  	or cur_state = STORE else '0';  -- read at ALU-specified address
+	sel_b 	   <= '1' when cur_state = R_OP else '0';   -- select second operand (immediate or from register)
+	sel_mem    <= '1' when cur_state = LOAD2 else '0';  -- write from memory (and not from ALU) into register
+	sel_rC     <= '1' when cur_state = R_OP else '0';   -- select write address
+	
 	-- read/write from/to memory
-	read <= '1' when cur_state = FETCH1 -- ready to read from memory
-				  or cur_state = LOAD1 else '0';
-	write <= '1' when cur_state = STORE else '0'; -- write to memory
+	read 	   <= '1' when cur_state = FETCH1   		-- ready to read from memory
+				  		or cur_state = LOAD1 else '0';
+	write      <= '1' when cur_state = STORE else '0';  -- write to memory
 		
 end synth;

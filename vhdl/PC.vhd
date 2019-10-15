@@ -30,6 +30,6 @@ begin
 			end if;
 		end if;
 	end process;
-		
+	
 	addr <= zeroes_16bit & reg;
 end synth;
