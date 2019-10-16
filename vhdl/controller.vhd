@@ -37,8 +37,8 @@ entity controller is
 end controller;
 
 architecture synth of controller is
-	type state is (FETCH1, FETCH2, DECODE, R_OP, STORE, BREAK,
-		LOAD1, LOAD2, I_OP, BRANCH, CALL, CALLR, JMP, JMPI);
+	type state is (FETCH1, FETCH2, DECODE, R_OP, RI_OP, STORE, BREAK,
+		LOAD1, LOAD2, I_OP, UI_OP, BRANCH, CALL, CALLR, JMP, JMPI);
 	signal cur_state, next_state : state;
 	signal s_op, s_opx : std_logic_vector(7 downto 0);
 begin
@@ -56,13 +56,13 @@ begin
 	end process;
 	
 	-- selecting the appropriate op-code for op_alu, depending on the operation 
-	operation : process(s_op, s_opx, op) 	-- to be completed later on 
+	operation : process(s_op, s_opx) 	-- to be completed later on 
 	begin
-		if s_op = x"04" then 
-			op_alu <= op; 					-- add operation
+	--	if s_op = x"04" then 
+	--		op_alu <= op; 					-- add operation
 		
 		-- R-type operations	
-		elsif s_op = x"3A" then
+		if s_op = x"3A" then
 			if s_opx = x"31" then 			-- add operation
 				op_alu <= "000100"; 
 			elsif s_opx = x"39" then 		-- sub operation
@@ -150,16 +150,44 @@ begin
 	next_state <= FETCH2 when cur_state = FETCH1 else
 			  	  DECODE when cur_state = FETCH2 else
 			  	  R_OP   when cur_state = DECODE and s_op = x"3A"
-			 								     and (s_opx = x"0E" 
-			 								     or s_opx = x"1B") 
-			 								     else
+			 								     and (s_opx = x"31" 
+			 								     or   s_opx = x"39"
+			 								     or   s_opx = x"08"
+			 								     or   s_opx = x"10"
+			 								     or   s_opx = x"06"
+			 								     or   s_opx = x"0E"
+			 								     or   s_opx = x"16"
+			 								     or   s_opx = x"1E"
+			 								     or   s_opx = x"13"
+			 								     or   s_opx = x"1B"
+			 								     or   s_opx = x"3B"
+			 								     or   s_opx = x"18"
+			 								     or   s_opx = x"20"
+			 								     or   s_opx = x"28"
+			 								     or   s_opx = x"30"
+			 								     or   s_opx = x"03"
+			 								     or   s_opx = x"0B") else
+			  	  RI_OP   when cur_state = DECODE and s_op = x"3A"
+			 								     and (s_opx = x"12" 
+			 								     or   s_opx = x"1A"
+			 								     or   s_opx = x"3A"
+			 								     or   s_opx = x"02") else
 			  	  STORE  when cur_state = DECODE and s_op = x"15" else
 			  	  BREAK  when cur_state = DECODE and s_op = x"3A" 
 			 									 and s_opx = x"34" else
 			  	  BREAK  when cur_state = BREAK  else
 			  	  LOAD1  when cur_state = DECODE and s_op = x"17" else
 			  	  LOAD2  when cur_state = LOAD1  else
-			 	  I_OP   when cur_state = DECODE and s_op = x"04" else
+			 	  I_OP   when cur_state = DECODE and (s_op = x"04"
+			 	  								   or s_op = x"08"
+			 	  								   or s_op = x"10"
+			 	  								   or s_op = x"18"
+			 	  								   or s_op = x"20") else
+			 	  UI_OP  when cur_state = DECODE and (s_op = x"0C"
+			 	  								   or s_op = x"14"		
+			 	  								   or s_op = x"1C"
+			 	  								   or s_op = x"28"
+			 	  								   or s_op = x"30") else 
 			 	  BRANCH when cur_state = DECODE and (s_op = x"06"
 			 	  								 or s_op = x"0E"
 			 	  								 or s_op = x"16"
@@ -176,9 +204,11 @@ begin
 			 	  								  or s_opx = x"05") else
 			 	  JMPI   when cur_state = DECODE and s_op = x"01" else
 			  	  FETCH1 when cur_state = R_OP
+			 			   or cur_state = RI_OP
 			 			   or cur_state = STORE
 			 			   or cur_state = LOAD2
 			 			   or cur_state = I_OP
+			 			   or cur_state = UI_OP
 			 			   or cur_state = BRANCH
 			 			   or cur_state = CALL
 			 			   or cur_state = CALLR
@@ -212,7 +242,9 @@ begin
 	
 	-- register file enable
 	rf_wren    <= '1' when cur_state = I_OP 
+					 	or cur_state = UI_OP
 					 	or cur_state = R_OP
+					 	or cur_state = RI_OP
 					 	or cur_state = LOAD2
 					 	or cur_state = CALL 
 					 	or cur_state = CALLR else '0';  -- enable write into register
@@ -227,7 +259,8 @@ begin
 						or cur_state = CALLR else '0';	-- select address rather then alu
 	sel_ra 	   <= '1' when cur_state = CALL 
 						or cur_state = CALLR else '0';	-- select write address
-	sel_rC     <= '1' when cur_state = R_OP else '0';   -- select write address
+	sel_rC     <= '1' when cur_state = R_OP
+						or cur_state = RI_OP else '0';   -- select write address
 	
 	-- read/write from/to memory
 	read 	   <= '1' when cur_state = FETCH1   		-- ready to read from memory
