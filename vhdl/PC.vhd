@@ -28,6 +28,10 @@ begin
 			if en = '1' then
 				if add_imm = '1' then
 					reg <= std_logic_vector(unsigned(reg) + unsigned(imm));
+				elsif sel_imm = '1' then
+					reg <= imm(13 downto 0) & "00";
+				elsif sel_a = '1' then
+					reg <= a;
 				else reg <= std_logic_vector(unsigned(reg) + to_unsigned(4, 16));
 				end if;
 			end if;
