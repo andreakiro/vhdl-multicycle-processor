@@ -40,11 +40,9 @@ architecture synth of controller is
 	type state is (FETCH1, FETCH2, DECODE, R_OP, RI_OP, STORE, BREAK,
 		LOAD1, LOAD2, I_OP, UI_OP, BRANCH, CALL, CALLR, JMP, JMPI);
 	signal cur_state, next_state : state;
-	signal s_op, s_opx : std_logic_vector(7 downto 0);
 begin
-	s_op <= "00" & op;
-	s_opx <= "00" & opx;
 	
+
 	-- flipflop
 	dff : process(reset_n, clk)
 	begin
@@ -56,153 +54,153 @@ begin
 	end process;
 	
 	-- selecting the appropriate op-code for op_alu, depending on the operation 
-	operation : process(s_op, s_opx) 	-- to be completed later on 
+	operation : process(op, opx) 	-- to be completed later on 
 	begin
-	--	if s_op = x"04" then 
-	--		op_alu <= op; 					-- add operation
-		
 		-- R-type operations	
-		if s_op = x"3A" then
-			if s_opx = x"31" then 			-- add operation
+		if op = "111010" then
+			if opx = "110001" then 			-- add operation
 				op_alu <= "000100"; 
-			elsif s_opx = x"39" then 		-- sub operation
+			elsif opx = "111001" then 		-- sub operation
 				op_alu <= "001000";
-			elsif s_opx = x"08" then 		-- cmple operation
+			elsif opx = "001000" then 		-- cmple operation
 				op_alu <= "011001"; 
-			elsif s_opx = x"10" then 		-- cmpgt operation
+			elsif opx = "010000" then 		-- cmpgt operation
 				op_alu <= "011010"; 
-			elsif s_opx = x"06" then 		-- nor operation
+			elsif opx = "000110" then 		-- nor operation
 				op_alu <= "100000"; 
-			elsif s_opx = x"0E" then 		-- and operation
+			elsif opx = "001110" then 		-- and operation
 				op_alu <= "100001"; 
-			elsif s_opx = x"16" then 		-- or operation
+			elsif opx = "010110" then 		-- or operation
 				op_alu <= "100010"; 
-			elsif s_opx = x"1E" then 		-- xnor operation
+			elsif opx = "011110" then 		-- xnor operation
 				op_alu <= "100011"; 
-			elsif s_opx = x"13" then 		-- sll operation
+			elsif opx = "010011" then 		-- sll operation
 				op_alu <= "110010"; 
-			elsif s_opx = x"1B" then 		-- srl operation
+			elsif opx = "011011" then 		-- srl operation
 				op_alu <= "110011"; 
-			elsif s_opx = x"3B" then 		-- sra operation
+			elsif opx = "111011" then 		-- sra operation
 				op_alu <= "111111";
-			elsif s_opx = x"12" then 		-- slli operation
+			elsif opx = "010010" then 		-- slli operation
 				op_alu <= "111010";
-			elsif s_opx = x"1A" then 		-- srli operation
+			elsif opx = "011010" then 		-- srli operation
 				op_alu <= "111011";
-			elsif s_opx = x"3A" then 		-- srai operation
+			elsif opx = "111010" then 		-- srai operation
 				op_alu <= "111111";
-			elsif s_opx = x"18" then 		-- cmpne operation
+			elsif opx = "011000" then 		-- cmpne operation
 				op_alu <= "011011";
-			elsif s_opx = x"20" then 		-- cmpeq operation
+			elsif opx = "100000" then 		-- cmpeq operation
 				op_alu <= "011100";
-			elsif s_opx = x"28" then 		-- cmpleu operation
+			elsif opx = "101000" then 		-- cmpleu operation
 				op_alu <= "011101";
-			elsif s_opx = x"30" then 		-- cmpgtu operation
+			elsif opx = "110000" then 		-- cmpgtu operation
 				op_alu <= "011110";
-			elsif s_opx = x"03" then 		-- rol operation
+			elsif opx = "000011" then 		-- rol operation
 				op_alu <= "111000";
-			elsif s_opx = x"0B" then 		-- ror operation
+			elsif opx = "001011" then 		-- ror operation
 				op_alu <= "111001";
-			elsif s_opx = x"02" then 		-- roli operation
+			elsif opx = "000010" then 		-- roli operation
 				op_alu <= "111000";
+			--else op_alu <= "000000";
 			end if;
 		
 		-- I-type operations
-		elsif s_op = x"17" or s_op = x"15" then 
+		elsif op = "010111" or op = "010101" then 
 			op_alu <= "000100"; 			-- ldw and stw
-		elsif s_op = x"0E" then
+		elsif op = "000110" then
+			op_alu <= "011100";				-- ble operation
+		elsif op = "001110" then
 			op_alu <= "011001";				-- ble operation
-		elsif s_op <= x"16" then
+		elsif op <= "010110" then
 			op_alu <= "011010";				-- bgt operation
-		elsif s_op = x"1E" then
+		elsif op = "011110" then
 			op_alu <= "011011";				-- bne operation
-		elsif s_op = x"26" then
+		elsif op = "100110" then
 			op_alu <= "011100";				-- beq operation
-		elsif s_op = x"2E" then
+		elsif op = "101110" then
 			op_alu <= "011101"; 			-- bleu operation
-		elsif s_op = x"36" then
+		elsif op = "110110" then
 			op_alu <= "011110";				-- bgtu operation
-		elsif s_op = x"04" then				-- addi operation
+		elsif op = "000100" then				-- addi operation
 			op_alu <= "000100";
-		elsif s_op = x"0C" then				-- andi operation
+		elsif op = "001100" then				-- andi operation
 			op_alu <= "100001";
-		elsif s_op = x"14" then				-- ori operation
+		elsif op = "010100" then				-- ori operation
 			op_alu <= "100010";
-		elsif s_op = x"1C" then				-- xnori operation
+		elsif op = "011100" then				-- xnori operation
 			op_alu <= "100011";
-		elsif s_op = x"08" then				-- cmplei operation
+		elsif op = "001000" then				-- cmplei operation
 			op_alu <= "011001";
-		elsif s_op = x"10" then				-- cmpgti operation
+		elsif op = "010000" then				-- cmpgti operation
 			op_alu <= "011010";
-		elsif s_op = x"18" then				-- cmpnei operation
+		elsif op = "011000" then				-- cmpnei operation
 			op_alu <= "011011";
-		elsif s_op = x"20" then				-- cmpeqi operation
+		elsif op = "100000" then				-- cmpeqi operation
 			op_alu <= "011100";
-		elsif s_op = x"28" then				-- cmpleui operation
+		elsif op = "101000" then				-- cmpleui operation
 			op_alu <= "011101";
-		elsif s_op = x"30" then				-- cmpgtui operation
+		elsif op = "110000" then				-- cmpgtui operation
 			op_alu <= "011110";
-		else op_alu <= "000000";			-- undefined alu operations (br, call)
+		--else op_alu <= "000000";			-- undefined alu operations (br, call)
 		end if;
 	end process;
 		
 	-- transition logic
 	next_state <= FETCH2 when cur_state = FETCH1 else
 			  	  DECODE when cur_state = FETCH2 else
-			  	  R_OP   when cur_state = DECODE and s_op = x"3A"
-			 								     and (s_opx = x"31" 
-			 								     or   s_opx = x"39"
-			 								     or   s_opx = x"08"
-			 								     or   s_opx = x"10"
-			 								     or   s_opx = x"06"
-			 								     or   s_opx = x"0E"
-			 								     or   s_opx = x"16"
-			 								     or   s_opx = x"1E"
-			 								     or   s_opx = x"13"
-			 								     or   s_opx = x"1B"
-			 								     or   s_opx = x"3B"
-			 								     or   s_opx = x"18"
-			 								     or   s_opx = x"20"
-			 								     or   s_opx = x"28"
-			 								     or   s_opx = x"30"
-			 								     or   s_opx = x"03"
-			 								     or   s_opx = x"0B") else
-			  	  RI_OP   when cur_state = DECODE and s_op = x"3A"
-			 								     and (s_opx = x"12" 
-			 								     or   s_opx = x"1A"
-			 								     or   s_opx = x"3A"
-			 								     or   s_opx = x"02") else
-			  	  STORE  when cur_state = DECODE and s_op = x"15" else
-			  	  BREAK  when cur_state = DECODE and s_op = x"3A" 
-			 									 and s_opx = x"34" else
+			  	  R_OP   when cur_state = DECODE and op = "111010"
+			 								     and (opx = "110001" 
+			 								     or   opx = "111001"
+			 								     or   opx = "001000"
+			 								     or   opx = "010000"
+			 								     or   opx = "000110"
+			 								     or   opx = "001110"
+			 								     or   opx = "010110"
+			 								     or   opx = "011110"
+			 								     or   opx = "010011"
+			 								     or   opx = "011011"
+			 								     or   opx = "111011"
+			 								     or   opx = "011000"
+			 								     or   opx = "100000"
+			 								     or   opx = "101000"
+			 								     or   opx = "110000"
+			 								     or   opx = "000011"
+			 								     or   opx = "001011") else
+			  	  RI_OP   when cur_state = DECODE and op = "111010"
+			 								     and (opx = "010010" 
+			 								     or   opx = "011010"
+			 								     or   opx = "111010"
+			 								     or   opx = "000010") else
+			  	  STORE  when cur_state = DECODE and op = "010101" else
+			  	  BREAK  when cur_state = DECODE and op = "111010" 
+			 									 and opx = "110100" else
 			  	  BREAK  when cur_state = BREAK  else
-			  	  LOAD1  when cur_state = DECODE and s_op = x"17" else
+			  	  LOAD1  when cur_state = DECODE and op = "010111" else
 			  	  LOAD2  when cur_state = LOAD1  else
-			 	  I_OP   when cur_state = DECODE and (s_op = x"04"
-			 	  								   or s_op = x"08"
-			 	  								   or s_op = x"10"
-			 	  								   or s_op = x"18"
-			 	  								   or s_op = x"20") else
-			 	  UI_OP  when cur_state = DECODE and (s_op = x"0C"
-			 	  								   or s_op = x"14"		
-			 	  								   or s_op = x"1C"
-			 	  								   or s_op = x"28"
-			 	  								   or s_op = x"30") else 
-			 	  BRANCH when cur_state = DECODE and (s_op = x"06"
-			 	  								 or s_op = x"0E"
-			 	  								 or s_op = x"16"
-			 	  								 or s_op = x"1E"
-			 	  								 or s_op = x"26"
-			 	  								 or s_op = x"2E"
-			 	  								 or s_op = x"36")
+			 	  I_OP   when cur_state = DECODE and (op = "000100"
+			 	  								   or op = "001000"
+			 	  								   or op = "010000"
+			 	  								   or op = "011000"
+			 	  								   or op = "100000") else
+			 	  UI_OP  when cur_state = DECODE and (op = "001100"
+			 	  								   or op = "010100"		
+			 	  								   or op = "011100"
+			 	  								   or op = "101000"
+			 	  								   or op = "110000") else 
+			 	  BRANCH when cur_state = DECODE and (op = "000110"
+			 	  								 or op = "001110"
+			 	  								 or op = "010110"
+			 	  								 or op = "011110"
+			 	  								 or op = "100110"
+			 	  								 or op = "101110"
+			 	  								 or op = "110110")
 			 	  								 else
-			 	  CALL 	 when cur_state = DECODE and s_op = x"00" else
-			 	  CALLR  when cur_state = DECODE and s_op = x"3A" 
-			 	  								 and s_opx = x"1D" else
-			 	  JMP 	 when cur_state = DECODE and s_op = x"3A"
-			 	  								 and (s_opx = x"0D" 
-			 	  								  or s_opx = x"05") else
-			 	  JMPI   when cur_state = DECODE and s_op = x"01" else
+			 	  CALL 	 when cur_state = DECODE and op = "000000" else
+			 	  CALLR  when cur_state = DECODE and op = "111010" 
+			 	  								 and opx = "011101" else
+			 	  JMP 	 when cur_state = DECODE and op = "111010"
+			 	  								 and (opx = "001101" 
+			 	  								  or opx = "000101") else
+			 	  JMPI   when cur_state = DECODE and op = "000001" else
 			  	  FETCH1 when cur_state = R_OP
 			 			   or cur_state = RI_OP
 			 			   or cur_state = STORE
@@ -229,7 +227,6 @@ begin
 	
 	-- pc control signals
 	pc_en 	   <= '1' when cur_state = FETCH2  			-- enable increment address by 4
-						or (cur_state = BRANCH and s_op = x"06")
 						or cur_state = CALL 
 						or cur_state = CALLR
 						or cur_state = JMP 
