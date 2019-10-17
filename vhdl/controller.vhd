@@ -56,92 +56,56 @@ begin
 	-- selecting the appropriate op-code for op_alu, depending on the operation 
 	operation : process(op, opx) 	-- to be completed later on 
 	begin
-		-- R-type operations	
-		if op = "111010" then
-			if opx = "110001" then 			-- add operation
-				op_alu <= "000100"; 
-			elsif opx = "111001" then 		-- sub operation
-				op_alu <= "001000";
-			elsif opx = "001000" then 		-- cmple operation
-				op_alu <= "011001"; 
-			elsif opx = "010000" then 		-- cmpgt operation
-				op_alu <= "011010"; 
-			elsif opx = "000110" then 		-- nor operation
-				op_alu <= "100000"; 
-			elsif opx = "001110" then 		-- and operation
-				op_alu <= "100001"; 
-			elsif opx = "010110" then 		-- or operation
-				op_alu <= "100010"; 
-			elsif opx = "011110" then 		-- xnor operation
-				op_alu <= "100011"; 
-			elsif opx = "010011" then 		-- sll operation
-				op_alu <= "110010"; 
-			elsif opx = "011011" then 		-- srl operation
-				op_alu <= "110011"; 
-			elsif opx = "111011" then 		-- sra operation
-				op_alu <= "111111";
-			elsif opx = "010010" then 		-- slli operation
-				op_alu <= "111010";
-			elsif opx = "011010" then 		-- srli operation
-				op_alu <= "111011";
-			elsif opx = "111010" then 		-- srai operation
-				op_alu <= "111111";
-			elsif opx = "011000" then 		-- cmpne operation
-				op_alu <= "011011";
-			elsif opx = "100000" then 		-- cmpeq operation
-				op_alu <= "011100";
-			elsif opx = "101000" then 		-- cmpleu operation
-				op_alu <= "011101";
-			elsif opx = "110000" then 		-- cmpgtu operation
-				op_alu <= "011110";
-			elsif opx = "000011" then 		-- rol operation
-				op_alu <= "111000";
-			elsif opx = "001011" then 		-- ror operation
-				op_alu <= "111001";
-			elsif opx = "000010" then 		-- roli operation
-				op_alu <= "111000";
-			--else op_alu <= "000000";
-			end if;
+		case op is 
+			-- R-type operations	
+			when "111010" => 
+				case opx is 
+					when "110001" => op_alu <= "000100";  		-- add operation  
+					when "111001" => op_alu <= "001000"; 		-- sub operation
+					when "001000" => op_alu <= "011001"; 		-- cmple operation
+					when "010000" => op_alu <= "011010"; 		-- cmpgt operation
+					when "000110" => op_alu <= "100000"; 		-- nor operation
+					when "001110" => op_alu <= "100001"; 		-- and operation
+					when "010110" => op_alu <= "100010"; 		-- or operation
+					when "011110" => op_alu <= "100011"; 		-- xnor operation
+					when "010011" => op_alu <= "110010"; 		-- sll operation
+					when "011011" => op_alu <= "110011"; 		-- srl operation
+					when "111011" => op_alu <= "111111"; 		-- sra operation
+					when "010010" => op_alu <= "111010"; 		-- slli operation
+					when "011010" => op_alu <= "111011"; 		-- srli operation
+					when "111010" => op_alu <= "111111"; 		-- srai operation
+					when "011000" => op_alu <= "011011"; 		-- cmpne operation
+					when "100000" => op_alu <= "011100"; 		-- cmpeq operation
+					when "101000" => op_alu <= "011101"; 		-- cmpleu operation
+					when "110000" => op_alu <= "011110"; 		-- cmpgtu operation
+					when "000011" => op_alu <= "111000"; 		-- rol operation
+					when "001011" => op_alu <= "111001"; 		-- ror operation
+					when "000010" => op_alu <= "111000"; 		-- roli operation
+					when others => op_alu <= "000000";
+				end case;
 		
 		-- I-type operations
-		elsif op = "010111" or op = "010101" then 
-			op_alu <= "000100"; 			-- ldw and stw
-		elsif op = "000110" then
-			op_alu <= "011100";				-- ble operation
-		elsif op = "001110" then
-			op_alu <= "011001";				-- ble operation
-		elsif op <= "010110" then
-			op_alu <= "011010";				-- bgt operation
-		elsif op = "011110" then
-			op_alu <= "011011";				-- bne operation
-		elsif op = "100110" then
-			op_alu <= "011100";				-- beq operation
-		elsif op = "101110" then
-			op_alu <= "011101"; 			-- bleu operation
-		elsif op = "110110" then
-			op_alu <= "011110";				-- bgtu operation
-		elsif op = "000100" then				-- addi operation
-			op_alu <= "000100";
-		elsif op = "001100" then				-- andi operation
-			op_alu <= "100001";
-		elsif op = "010100" then				-- ori operation
-			op_alu <= "100010";
-		elsif op = "011100" then				-- xnori operation
-			op_alu <= "100011";
-		elsif op = "001000" then				-- cmplei operation
-			op_alu <= "011001";
-		elsif op = "010000" then				-- cmpgti operation
-			op_alu <= "011010";
-		elsif op = "011000" then				-- cmpnei operation
-			op_alu <= "011011";
-		elsif op = "100000" then				-- cmpeqi operation
-			op_alu <= "011100";
-		elsif op = "101000" then				-- cmpleui operation
-			op_alu <= "011101";
-		elsif op = "110000" then				-- cmpgtui operation
-			op_alu <= "011110";
-		--else op_alu <= "000000";			-- undefined alu operations (br, call)
-		end if;
+			when "010111" => op_alu <= "000100"; 			-- ldw and stw
+			when "010101" => op_alu <= "000100"; 			-- ldw and stw
+			when "000110" => op_alu <= "011100";				-- ble operation
+			when "001110" => op_alu <= "011001";				-- ble operation
+			when "010110" => op_alu <= "011010";				-- bgt operation
+			when "011110" => op_alu <= "011011";				-- bne operation
+			when "100110" => op_alu <= "011100";				-- beq operation
+			when "101110" => op_alu <= "011101"; 			-- bleu operation
+			when "110110" => op_alu <= "011110";				-- bgtu operation
+			when "000100" => op_alu <= "000100";				-- addi operation
+			when "001100" => op_alu <= "100001";				-- andi operation
+			when "010100" => op_alu <= "100010";				-- ori operation
+			when "011100" => op_alu <= "100011";				-- xnori operation
+			when "001000" => op_alu <= "011001";				-- cmplei operation
+			when "010000" => op_alu <= "011010";				-- cmpgti operation
+			when "011000" => op_alu <= "011011";				-- cmpnei operation
+			when "100000" => op_alu <= "011100";				-- cmpeqi operation
+			when "101000" => op_alu <= "011101";				-- cmpleui operation
+			when "110000" => op_alu <= "011110";				-- cmpgtui operation
+			when others => op_alu <= "000000";			-- undefined alu operations (br, call)
+		end case;
 	end process;
 		
 	-- transition logic
