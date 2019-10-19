@@ -38,5 +38,5 @@ begin
 		end if;
 	end process;
 	
-	addr <= zeroes_16bit & reg;
+	addr <= zeroes_16bit & reg(15 downto 2) & "00";
 end synth;
