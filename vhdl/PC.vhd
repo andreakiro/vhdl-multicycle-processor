@@ -18,18 +18,17 @@ end PC;
 
 architecture synth of PC is
 	signal reg : std_logic_vector(15 downto 0);
-	constant zeroes_16bit : std_logic_vector(15 downto 0) := (others => '0');
 begin
 	clock : process(clk, reset_n)
 	begin
 		if reset_n = '0' then
-			reg <= zeroes_16bit;
+			reg <= (15 downto 0 => '0');
 		elsif rising_edge(clk) then
 			if en = '1' then
 				if add_imm = '1' then
 					reg <= std_logic_vector(unsigned(reg) + unsigned(imm));
 				elsif sel_imm = '1' then
-					reg <= imm;
+					reg <= imm(13 downto 0) & "00";
 				elsif sel_a = '1' then
 					reg <= a;
 				else reg <= std_logic_vector(unsigned(reg) + to_unsigned(4, 16));
@@ -38,5 +37,5 @@ begin
 		end if;
 	end process;
 	
-	addr <= zeroes_16bit & reg(15 downto 2) & "00";
+	addr <= (15 downto 0 => '0') & reg(15 downto 2) & "00";
 end synth;
